@@ -60,7 +60,7 @@ local Contributors = {
 	["STEAM_0:1:75441355"] = "Tester",
 	
 	["STEAM_0:0:453611223"] = "Multihelper",
-	["STEAM_0:1:155573857"] = "Helper"
+	["STEAM_0:1:155573857"] = "Helper",
 	
 	["STEAM_0:1:59798110"] = "Advertiser",
 	["STEAM_0:1:4375194"] = "Advertiser",
@@ -115,7 +115,7 @@ local DefaultConfig = {
 	},
 	["hvh"] = {},
 	["visuals"] = {
-		thirdperson = false
+		thirdperson = {status = false, distance = 100}
 	},
 	["ttt"] = {
 		["traitor-finder"] = false,
@@ -169,12 +169,7 @@ local function changeData(tabl,pathArray) --- stolen from devforum | Source: htt
 	local template = DefaultConfig
 	for index, path in ipairs(pathArray) do
 		if pathArray[index + 2]==nil then
-			--if typeof(ConfigTemplate[pathArray[index + 1]])==typeof(tabl[pathArray[index + 1]]) then tabl[path] = pathArray[index + 1] end
-			--if typeof(tabl[path])==typeof(ConfigTemplate[path]) then
-			--print(typeof(tabl[path]),typeof(template[path]),typeof(pathArray[index + 1]))
-
 			if typeof(pathArray[index + 1]) == typeof(template[path]) and pathArray[index + 1]~=nil and template[path]~=nil then tabl[path] = pathArray[index + 1] end
-			--end
 		else
 			if tabl[path]==nil then
 				break
@@ -188,7 +183,7 @@ end
 
 concommand.Add("idiot_setvalue", function(caller, cmd, args)
 	local Lego = {}
-	for _,N in pairs(args) do Lego[#Lego+1] = TranslateValue(lowercase(N)) end
+	for _,N in pairs(args) do Lego[#Lego+1] = tonumber(N) or TranslateValue(lowercase(N)) end
 	changeData(CurrentConfig,Lego)
 end,nil,"Manually set values within IdiotBox. You should use this inside autoexec binds for your own toggles.")
 
@@ -197,19 +192,19 @@ local menutoggle = false
 local menudebounce = false
 --- VARIABLES ---
 --- FUNCTIONS ---
-local function CalcView(ply, pos, ang, fov)
-
+local function Camera(ply, pos, ang, fov)
+print(CurrentConfig["visuals"].thirdperson.distance)
 local view = {
-        origin = pos - (ang:Forward() * 100) or pos,
+        origin = pos - (ang:Forward() * CurrentConfig["visuals"].thirdperson.distance) or pos,
         ang = ang,
         fov = fov,
-        drawviewer =  CurrentConfig["Visuals"].thirdperson
-    }
+        drawviewer =  CurrentConfig["visuals"].thirdperson.status
+}
 
-    if CurrentConfig["Visuals"].thirdperson then
+    if CurrentConfig["visuals"].thirdperson.status then
         return view
     end
-end)
+end
 --- MENU TEST ---
 
 local function drawSquare()
