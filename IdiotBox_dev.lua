@@ -193,7 +193,6 @@ local menudebounce = false
 --- VARIABLES ---
 --- FUNCTIONS ---
 local function Camera(ply, pos, ang, fov)
-print(CurrentConfig["visuals"].thirdperson.distance)
 local view = {
         origin = pos - (ang:Forward() * CurrentConfig["visuals"].thirdperson.distance) or pos,
         ang = ang,
