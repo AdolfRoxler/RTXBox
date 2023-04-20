@@ -51,6 +51,7 @@ local Contributors = {
 	["STEAM_0:0:109145007"] = "Code dev",
 	["STEAM_0:0:205376238"] = "Code dev",
 	["STEAM_0:0:158432486"] = "Code dev",
+	["STEAM:0:0:41908082"] = "Code dev",
 	
 	["STEAM_0:1:188710062"] = "Tester",
 	["STEAM_0:1:191270548"] = "Tester",
@@ -192,6 +193,33 @@ local menutoggle = false
 local menudebounce = false
 --- VARIABLES ---
 --- FUNCTIONS ---
+function RotationCompensation(pCmd, flYawRotation)
+    local yaw,flSpeed
+    local vMove = Vector(pCmd:GetForwardMove(), pCmd:GetSideMove(), 0)
+
+    flSpeed = vMove:Length2D()
+
+    local cmdView = pCmd:GetViewAngles()
+    cmdView:Normalize()
+
+    local angMoveRotation = ch:GetViewAngles().y
+    if isnumber(flYawRotation) then
+        angMoveRotation = angMoveRotation - flYawRotation
+    end
+
+    --print("yaw rot move", angMoveRotation)
+
+    yaw = math.deg(math.atan2(vMove.y, vMove.x))
+    yaw = math.rad(cmdView.y - angMoveRotation + yaw)
+
+    pCmd:SetForwardMove(math.cos(yaw) * flSpeed)
+    pCmd:SetSideMove(math.sin(yaw) * flSpeed)
+
+    if cmdView.x < -90 or cmdView.x > 90 then
+        pCmd:SetForwardMove(-pCmd:GetForwardMove())
+        pCmd:SetSideMove(-pCmd:GetSideMove())
+    end
+end
 local function Camera(ply, pos, ang, fov)
 local view = {
         origin = pos - (ang:Forward() * CurrentConfig["visuals"].thirdperson.distance) or pos,
