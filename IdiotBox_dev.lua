@@ -93,8 +93,11 @@ local DefaultConfig = {
 	},
 	["esp"] = {},
 	["gfuel"] = {
+		["movement"] = {
+			bhop = false,
+		},
 		["anti-aim"] = {
-			status = true,
+			status = false,
 		},
 		["aimbot"] = {
 			status = false, 
@@ -232,6 +235,14 @@ function RotationCompensation(pCmd, flYawRotation)
     end
 end
 
+function bhop(cmd)
+    if not CurrentConfig["gfuel"]["movement"].bhop then return end
+    if self:IsOnGround() then return end
+    if cmd:KeyDown( IN_JUMP ) then
+        cmd:RemoveKey( IN_JUMP )
+    end
+end
+
 local function FakeLag(cmd)
 	if cmd:CommandNumber()==0 then return end
 	packetcount = packetcount +1
@@ -240,6 +251,7 @@ local function FakeLag(cmd)
 end
 
 local function Movement(cmd)
+	bhop(cmd)
 	if cmd:CommandNumber()==0 then return end
 	if CurrentConfig["gfuel"]["anti-aim"].status == true then
 		if not bsendpacket then
@@ -313,11 +325,10 @@ local function keyPressed(a,b)
 	if  input.IsKeyDown(KEY_HOME) and not menudebounce then
 		toggleMenu()
 		menudebounce = true
-	elseif not input.IsKeyDown(KEY_HOME) and menudebounce then 
-		menudebounce = not menudebounce
+	elseif not input.IsKeyDown(KEY_HOME) and menudebounce then menudebounce = not menudebounce
 	end
 end
 
 hook.Add("Think", "keyPressed", keyPressed)
 hook.Add("CalcView", "Camera", Camera)
---hook.Add("CreateMove", "Movement", Movement)
+hook.Add("CreateMove", "Movement", Movement)
