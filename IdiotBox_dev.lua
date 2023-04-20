@@ -233,22 +233,51 @@ local view = {
     end
 end
 --- MENU TEST ---
+local function CreateMenu()
+	-- Frame
+	local Frame = vgui.Create("DFrame")
+	Frame:SetSize(500,400)
+	Frame:Center()
+	Frame:SetTitle("")
+	Frame:ShowCloseButton(false)
+	Frame:SetDraggable(false)
+	Frame.Paint = function(self, w, h)
+		draw.RountedBox(0, 0, 0, w, h, Colour(50, 50, 50, 200))
+	end
+	-- Tabs inherits frame
+	local TabPanel = vgui.Create("DPropertySheet", Frame)
+	TabPanel:SetPos(5, 30)
+	TabPanel:SetSize(Frame:GetWide() - 10, Frame:GetTall() - 35)
+	--Table of tabs
+	local Tabs = {
+        { Name = "Aimbot", Panel = vgui.Create("DPanel", TabPanel) },
+        { Name = "Anti-Aim", Panel = vgui.Create("DPanel", TabPanel) },
+        { Name = "Visuals", Panel = vgui.Create("DPanel", TabPanel) },
+        { Name = "Misc", Panel = vgui.Create("DPanel", TabPanel) },
+        { Name = "Settings", Panel = vgui.Create("DPanel", TabPanel) }
+    }
+	--Return tabs in frame and the menu
+	for k, v in pairs(Tabs) do
+        TabPanel:AddSheet(v.Name, v.Panel, nil, false, false)
+    end
 
-local function drawSquare()
-	surface.SetDrawColor(50, 50, 50, 255)
-	--surface.DrawRect(50, 50, 100, 100)
-	local SX = ScreenY()*.75
-	local SY = ScreenY()*.9
-	draw.RoundedBox(ScreenY()*.025, ScreenX()*.5-SX*.5, ScreenY()*.5-SY*.5, SX,SY, Color(100, 100, 100, 100))
+    return Frame
 end
 
+local menutoggle = false
+local menu
+
 local function toggleMenu()
-	if menutoggle then
-		hook.Add("HUDPaint", "drawSquare",drawSquare)
-	else
-		hook.Remove("HUDPaint", "drawSquare",drawSquare)
+	if not menutoggle then
+		menutoggle = true
+		menu = CreateMenu()
 	end
-	menutoggle = not menutoggle
+	else
+		menutoggle = false
+		if IsValid(menu) then
+			menu:Remove()
+		end
+	end
 end
 
 local function keyPressed(a,b)
