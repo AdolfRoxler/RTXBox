@@ -22,6 +22,12 @@ local Weapons = FindMetaTable("Weapon")
 local Angles = FindMetaTable("Angle")
 local Vectors = FindMetaTable("Vector")
 local Materials = FindMetaTable("IMaterial")
+
+require("bsendpacket")
+require("fhook")
+require("ChatClear")
+require("dickwrap")
+require("big")
 --- Event setup ---
 gameevent.Listen("entity_killed")
 gameevent.Listen("player_disconnect")
@@ -87,8 +93,11 @@ local DefaultConfig = {
 	},
 	["esp"] = {},
 	["gfuel"] = {
+		["anti-aim"] = {
+			status = true,
+		},
 		["aimbot"] = {
-			state = false, 
+			status = false, 
 			fov = 90, 
 			interpolation = false, 
 			silent = false, 
@@ -112,7 +121,7 @@ local DefaultConfig = {
 			maxhealth = 500,
 			priority = "crosshair", 
 		},
-		["triggerbot"] = {state = false, smooth = false, azoom = false, astop = false, acrouch = false},
+		["triggerbot"] = {status = false, smooth = false, azoom = false, astop = false, acrouch = false},
 	},
 	["hvh"] = {},
 	["visuals"] = {
@@ -134,7 +143,7 @@ local DefaultConfig = {
 	},
 	["darkrp"] = {
 		["anti-arrest"] = false,
-		["prop-opacity"] = {state = false, opacity = 1},
+		["prop-opacity"] = {status = false, opacity = 1},
 		["show-money"] = false,
 	},
 	["miscellaneous"] = {
@@ -146,7 +155,7 @@ local DefaultConfig = {
 		["no-spread"] = false,
 		["predict-projectiles"] = false,
 		["auto-reload"] = false,
-		["rapid-fire"] = {state = false, primary = true, delay=0},
+		["rapid-fire"] = {status = false, primary = true, delay=0},
 		["abuse-interpolation"] = false,
 		["abuse-bullet-time"] = false,
 		["draw-fov-circle"] = false,
@@ -192,6 +201,8 @@ end,nil,"Manually set values within IdiotBox. You should use this inside autoexe
 local menutoggle = false
 local menudebounce = false
 --- VARIABLES ---
+local FakeX,FakeY = 0,0
+local packetcount = 0
 --- FUNCTIONS ---
 function RotationCompensation(pCmd, flYawRotation)
     local yaw,flSpeed
@@ -202,7 +213,7 @@ function RotationCompensation(pCmd, flYawRotation)
     local cmdView = pCmd:GetViewAngles()
     cmdView:Normalize()
 
-    local angMoveRotation = ch:GetViewAngles().y
+    local angMoveRotation = EyeAngles().y
     if isnumber(flYawRotation) then
         angMoveRotation = angMoveRotation - flYawRotation
     end
@@ -220,16 +231,35 @@ function RotationCompensation(pCmd, flYawRotation)
         pCmd:SetSideMove(-pCmd:GetSideMove())
     end
 end
+
+local function FakeLag(cmd)
+	if cmd:CommandNumber()==0 then return end
+	packetcount = packetcount +1
+	bsendpacket = queue>=14 and true
+	packetcount = packetcont>=14 and 0 or packetcount
+end
+
+local function Movement(cmd)
+	if cmd:CommandNumber()==0 then return end
+	if CurrentConfig["gfuel"]["anti-aim"].status == true then
+		if not bsendpacket then
+			cmd:SetViewAngles(Angle(FakeX,FakeY,0))
+			RotationCompensation(cmd)
+		end
+	end
+end
 local function Camera(ply, pos, ang, fov)
-local view = {
+
+
+	local ThirdPerson = {
         origin = pos - (ang:Forward() * CurrentConfig["visuals"].thirdperson.distance) or pos,
         ang = ang,
         fov = fov,
         drawviewer =  CurrentConfig["visuals"].thirdperson.status
-}
+	}
 
     if CurrentConfig["visuals"].thirdperson.status then
-        return view
+        return ThirdPerson
     end
 end
 --- MENU TEST ---
@@ -242,7 +272,7 @@ local function CreateMenu()
 	Frame:ShowCloseButton(false)
 	Frame:SetDraggable(false)
 	Frame.Paint = function(self, w, h)
-		draw.RountedBox(0, 0, 0, w, h, Colour(50, 50, 50, 200))
+		draw.RoundedBox(0, 0, 0, w, h, Color(50, 50, 50, 200))
 	end
 	-- Tabs inherits frame
 	local TabPanel = vgui.Create("DPropertySheet", Frame)
@@ -265,13 +295,12 @@ local function CreateMenu()
 end
 
 local menutoggle = false
-local menu
+local menu;
 
 local function toggleMenu()
 	if not menutoggle then
 		menutoggle = true
 		menu = CreateMenu()
-	end
 	else
 		menutoggle = false
 		if IsValid(menu) then
@@ -290,3 +319,4 @@ end
 
 hook.Add("Think", "keyPressed", keyPressed)
 hook.Add("CalcView", "Camera", Camera)
+--hook.Add("CreateMove", "Movement", Movement)
