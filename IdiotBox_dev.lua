@@ -3,6 +3,8 @@
 	Rewrite by AdolfRoxler -> TG NGGUH
 	
 	Phizz, the creator
+	
+	New contributors willing to be credited have been added
 ]]
 --- Changelogs ---
 local Changelogs = [[
@@ -189,9 +191,31 @@ local function changeData(tabl,pathArray) --- stolen from devforum | Source: htt
 			end
 			if typeof(tabl[path]) == typeof(template[path]) and tabl[path]~=nil and template[path]~=nil then
 				tabl = tabl[path] 
-				template = template[path] else break end
+				template = template[path] 
+				else break end
 		end
 	end
+end
+
+local function readData(tabl,pathArray) --- as you can guess this is to read values
+	--send pathArray to client
+	local template = DefaultConfig
+	for index, path in ipairs(pathArray) do
+		if pathArray[index + 1]==nil then
+			if template[path]~=nil then 
+				return tabl[path]
+			end
+		else
+			if tabl[path]==nil then
+				break
+			end
+			if typeof(tabl[path]) == typeof(template[path]) and tabl[path]~=nil and template[path]~=nil then
+				tabl = tabl[path]
+				template = template[path] 
+			else break end
+		end
+	end
+	return nil
 end
 
 concommand.Add("idiot_setvalue", function(caller, cmd, args)
@@ -275,35 +299,250 @@ local function Camera(ply, pos, ang, fov)
     end
 end
 --- MENU TEST ---
+local tabselect = "MainMenu"
+
+local function DrawUpperText(w, h)
+	surface.SetFont("MenuFont")
+	local tw, th = surface.GetTextSize("")
+	surface.SetTextPos(50, 15 - th / 2)
+	surface.SetTextColor(HSVToColor(RealTime() * 45 % 360, 1, 1))
+	surface.SetFont("MainFont")
+	surface.DrawText("IdiotBox v6.9.b7")
+	surface.SetTextPos(160, 18 - th / 2)
+	surface.SetTextColor(0, 155, 230, 175)
+	surface.SetFont("MainFont2")
+	surface.DrawText("Latest build: April 15th 2023")
+end
+
+local function CreateSection(r, x, y, w, h, text)
+	draw.RoundedBox(r, x, y, w, h, Color(40, 40, 60, 255))
+	draw.SimpleText(text, "MainFont3", x+35, y-7, Color(50, 50, 250, 255),TEXT_ALIGN_CENTER, TEXT_ALIGN_LEFT)
+end
+
+local function CheckBox(text, parent, x, y, group, var, type)
+	local ibCheckbox = vgui.Create( "DCheckBoxLabel", parent)
+	ibCheckbox:SetPos( x, y )
+	ibCheckbox:SetFont("MainFont3")
+	ibCheckbox:SetText(text)
+	ibCheckbox:SetTextColor(color_white)
+	ibCheckbox:SetValue( CurrentConfig[group][var] )
+	ibCheckbox:SizeToContents()
+	function ibCheckbox.Button:Paint(w, h)
+		if DefaultConfig[group][var] then
+			draw.RoundedBox(0, 2, 2, w-4, h-4, Color(58, 144, 226))
+		else
+			draw.RoundedBox(0, 1, 1, w-2, h-2, Color(30, 30, 45))
+			if self:IsHovered() then
+				draw.RoundedBox(0, 1, 1, w-2, h-2, Color(255, 255, 255, 1))
+			end
+		end
+	end	
+	function ibCheckbox:OnChange(val)
+		DefaultConfig[group][var] = val
+	end
+	
+	if type == "col" then
+
+	elseif type == "bind" then
+
+	end
+end
+
 local function CreateMenu()
 	-- Frame
-	local Frame = vgui.Create("DFrame")
-	Frame:SetSize(500,400)
-	Frame:Center()
-	Frame:SetTitle("")
-	Frame:ShowCloseButton(false)
-	Frame:SetDraggable(false)
-	Frame.Paint = function(self, w, h)
-		draw.RoundedBox(0, 0, 0, w, h, Color(50, 50, 50, 200))
+	local IdiotFrame = vgui.Create("DFrame")
+	IdiotFrame:SetSize(771, 859)
+	IdiotFrame:Center()
+	IdiotFrame:SetTitle("")
+	IdiotFrame:ShowCloseButton(false)
+	IdiotFrame:SetDraggable(false)
+	IdiotFrame:MakePopup()
+	IdiotFrame.Paint = function(self, w, h)
+		draw.RoundedBox(60, 0, 0, w, h, Color(50, 50, 250, 255))
+		draw.RoundedBox(60, 2, 2, w - 4, h - 4, Color(30, 30, 45))
+		DrawUpperText(w, h)
 	end
-	-- Tabs inherits frame
-	local TabPanel = vgui.Create("DPropertySheet", Frame)
-	TabPanel:SetPos(5, 30)
-	TabPanel:SetSize(Frame:GetWide() - 10, Frame:GetTall() - 35)
-	--Table of tabs
-	local Tabs = {
-        { Name = "Aimbot", Panel = vgui.Create("DPanel", TabPanel) },
-        { Name = "Anti-Aim", Panel = vgui.Create("DPanel", TabPanel) },
-        { Name = "Visuals", Panel = vgui.Create("DPanel", TabPanel) },
-        { Name = "Misc", Panel = vgui.Create("DPanel", TabPanel) },
-        { Name = "Settings", Panel = vgui.Create("DPanel", TabPanel) }
-    }
-	--Return tabs in frame and the menu
-	for k, v in pairs(Tabs) do
-        TabPanel:AddSheet(v.Name, v.Panel, nil, false, false)
-    end
+	
+	--[[ Panals ]]--
+	
+	local panel1 = vgui.Create("DPanel", IdiotFrame)
+	panel1:Dock(FILL)
+	panel1.Paint = function()
+		CreateSection(0, 15, 60, 235, 250, "Test")
+		--CreateSection(0, 265, 60, 235, 250, "text")
+		--CreateSection(0, 515, 60, 235, 250, "text")
+	end
+	panel1:SetVisible(tabselect == "MainMenu")
+	local panel2 = vgui.Create("DPanel", IdiotFrame)
+	panel2:Dock(FILL)
+	panel2.Paint = function() end
+	panel2:SetVisible(tabselect == "Aim")
+	local panel3 = vgui.Create("DPanel", IdiotFrame)
+	panel3:Dock(FILL)
+	panel3.Paint = function() end
+	panel3:SetVisible(tabselect == "HVH")
+	local panel4 = vgui.Create("DPanel", IdiotFrame)
+	panel4:Dock(FILL)
+	panel4.Paint = function() end
+	panel4:SetVisible(tabselect == "Vis")
+	local panel5 = vgui.Create("DPanel", IdiotFrame)
+	panel5:Dock(FILL)
+	panel5.Paint = function() end
+	panel5:SetVisible(tabselect == "Misc")
+	local panel6 = vgui.Create("DPanel", IdiotFrame)
+	panel6:Dock(FILL)
+	panel6.Paint = function() end
+	panel6:SetVisible(tabselect == "Dick") -- Make this what ever you wnat.
+	
+	--[[ Tabs / Designs ]]--
+	
+	local MainTab = vgui.Create("DButton", IdiotFrame)
+	MainTab:SetFont("MainFont3")
+	MainTab:SetText("Main Menu")
+	MainTab:SetTextColor(Color(0, 205, 255))
+	MainTab:SetSize(122, 30)
+	MainTab:SetPos(5, 40)
+	function MainTab:DoClick()
+		tabselect = "MainMenu"
+		panel1:SetVisible(true)
+		panel2:SetVisible(false)
+		panel3:SetVisible(false)
+		panel4:SetVisible(false)
+		panel5:SetVisible(false)
+		panel6:SetVisible(false)
+	end
+	function MainTab:Paint(w, h)
+		if tabselect == "MainMenu" then
+			draw.RoundedBox(0, 0, h-2, w, h, Color(0, 155, 255))
+		end
+		if self:IsHovered() then
+			draw.RoundedBox(0, 0, 0, w, h, Color(255, 255, 255, 1))
+		end
+	end
 
-    return Frame
+	local AimTab = vgui.Create("DButton", IdiotFrame)
+	AimTab:SetFont("MainFont3")
+	AimTab:SetText("Aim Assist")
+	AimTab:SetTextColor(Color(0, 205, 255))
+	AimTab:SetSize(127, 30)
+	AimTab:SetPos(132, 40)
+	function AimTab:DoClick()
+		tabselect = "Aim"
+		panel1:SetVisible(false)
+		panel2:SetVisible(true)
+		panel3:SetVisible(false)
+		panel4:SetVisible(false)
+		panel5:SetVisible(false)
+		panel6:SetVisible(false)
+	end
+	function AimTab:Paint(w, h)
+		if tabselect == "Aim" then
+			draw.RoundedBox(0, 0, h-2, w, h, Color(0, 155, 255))
+		end
+		if self:IsHovered() then
+			draw.RoundedBox(0, 0, 0, w, h, Color(255, 255, 255, 1))
+		end
+	end
+
+	local HvhTab = vgui.Create("DButton", IdiotFrame)
+	HvhTab:SetFont("MainFont3")
+	HvhTab:SetText("Hack vs. Hack")
+	HvhTab:SetTextColor(Color(0, 205, 255))
+	HvhTab:SetSize(127, 30)
+	HvhTab:SetPos(259, 40)
+	function HvhTab:DoClick()
+		tabselect = "HVH"
+		panel1:SetVisible(false)
+		panel2:SetVisible(false)
+		panel3:SetVisible(true)
+		panel4:SetVisible(false)
+		panel5:SetVisible(false)
+		panel6:SetVisible(false)
+	end
+	function HvhTab:Paint(w, h)
+		if tabselect == "HVH" then
+			draw.RoundedBox(0, 0, h-2, w, h, Color(0, 155, 255))
+		end
+		if self:IsHovered() then
+			draw.RoundedBox(0, 0, 0, w, h, Color(255, 255, 255, 1))
+		end
+	end
+
+	local VisTab = vgui.Create("DButton", IdiotFrame)
+	VisTab:SetFont("MainFont3")
+	VisTab:SetText("Visuals")
+	VisTab:SetTextColor(Color(0, 205, 255))
+	VisTab:SetSize(127, 30)
+	VisTab:SetPos(386, 40)
+	function VisTab:DoClick()
+		tabselect = "Vis"
+		panel1:SetVisible(false)
+		panel2:SetVisible(false)
+		panel3:SetVisible(false)
+		panel4:SetVisible(true)
+		panel5:SetVisible(false)
+		panel6:SetVisible(false)
+	end
+	function VisTab:Paint(w, h)
+		if tabselect == "Vis" then
+			draw.RoundedBox(0, 0, h-2, w, h, Color(0, 155, 255))
+		end
+		if self:IsHovered() then
+			draw.RoundedBox(0, 0, 0, w, h, Color(255, 255, 255, 1))
+		end
+	end
+
+	local MiscTab = vgui.Create("DButton", IdiotFrame)
+	MiscTab:SetFont("MainFont3")
+	MiscTab:SetText("Miscellaneous")
+	MiscTab:SetTextColor(Color(0, 205, 255))
+	MiscTab:SetSize(127, 30)
+	MiscTab:SetPos(513, 40)
+	function MiscTab:DoClick()
+		tabselect = "Misc"
+		panel1:SetVisible(false)
+		panel2:SetVisible(false)
+		panel3:SetVisible(false)
+		panel4:SetVisible(false)
+		panel5:SetVisible(true)
+		panel6:SetVisible(false)
+	end
+	function MiscTab:Paint(w, h)
+		if tabselect == "Misc" then
+			draw.RoundedBox(0, 0, h-2, w, h, Color(0, 155, 255))
+		end
+		if self:IsHovered() then
+			draw.RoundedBox(0, 0, 0, w, h, Color(255, 255, 255, 1))
+		end
+	end
+
+	local LastTab = vgui.Create("DButton", IdiotFrame) -- Whatever you want here
+	LastTab:SetFont("MainFont3")
+	LastTab:SetText("Change This")
+	LastTab:SetTextColor(Color(0, 205, 255))
+	LastTab:SetSize(127, 30)
+	LastTab:SetPos(640, 40)
+	function LastTab:DoClick()
+		tabselect = "Dick"
+		panel1:SetVisible(false)
+		panel2:SetVisible(false)
+		panel3:SetVisible(false)
+		panel4:SetVisible(false)
+		panel5:SetVisible(false)
+		panel6:SetVisible(true)
+	end
+	function LastTab:Paint(w, h)
+		if tabselect == "Dick" then
+			draw.RoundedBox(0, 0, h-2, w, h, Color(0, 155, 255))
+		end
+		if self:IsHovered() then
+			draw.RoundedBox(0, 0, 0, w, h, Color(255, 255, 255, 1))
+		end
+	end
+
+	CheckBox("Test CheckBox", panel1, 20, 70, "movement", "bhop", "col")
+
+    return IdiotFrame
 end
 
 local menutoggle = false
@@ -322,6 +561,7 @@ local function toggleMenu()
 end
 
 local function keyPressed(a,b)
+	print(readData(CurrentConfig,{"gfuel","movement","bhop"}))
 	if  input.IsKeyDown(KEY_HOME) and not menudebounce then
 		toggleMenu()
 		menudebounce = true
