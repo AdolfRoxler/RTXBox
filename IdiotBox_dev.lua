@@ -96,7 +96,7 @@ local DefaultConfig = {
 	["esp"] = {},
 	["gfuel"] = {
 		["movement"] = {
-			bhop = false,
+			bhop = {status = false, auto = false},
 		},
 		["anti-aim"] = {
 			status = false,
@@ -181,7 +181,7 @@ end
 
 local function changeData(tabl,pathArray) --- stolen from devforum | Source: https://devforum.roblox.com/t/how-to-make-equivalent-of-instancegetfullname-for-tables/1114061
 	--send pathArray to client
-	local template = DefaultConfig
+	local template = table.Copy(DefaultConfig)
 	for index, path in ipairs(pathArray) do
 		if pathArray[index + 2]==nil then
 			if typeof(pathArray[index + 1]) == typeof(template[path]) and pathArray[index + 1]~=nil and template[path]~=nil then tabl[path] = pathArray[index + 1] end
@@ -197,14 +197,17 @@ local function changeData(tabl,pathArray) --- stolen from devforum | Source: htt
 	end
 end
 
-local function readData(tabl,pathArray) --- as you can guess this is to read values
+local function readData(tabel,pathArray) --- as you can guess this is to read values
 	--send pathArray to client
-	local template = DefaultConfig
+	local template = table.Copy(DefaultConfig)
+	local tabl = table.Copy(tabel)
 	for index, path in ipairs(pathArray) do
+		if typeof(template)~="table" then return tabl end
+		
 		if pathArray[index + 1]==nil then
-			if template[path]~=nil then 
-				return tabl[path]
-			end
+			--if template[path]~=nil then 
+			return tabl
+			--end
 		else
 			if tabl[path]==nil then
 				break
@@ -215,7 +218,6 @@ local function readData(tabl,pathArray) --- as you can guess this is to read val
 			else break end
 		end
 	end
-	return nil
 end
 
 concommand.Add("idiot_setvalue", function(caller, cmd, args)
@@ -260,8 +262,8 @@ function RotationCompensation(pCmd, flYawRotation)
 end
 
 function bhop(cmd)
-    if not CurrentConfig["gfuel"]["movement"].bhop then return end
-    if self:IsOnGround() then return end
+    if not CurrentConfig["gfuel"]["movement"].bhop.status then return end
+    if self:IsOnGround() then if CurrentConfig["gfuel"]["movement"].bhop.auto then cmd:AddKey( IN_JUMP ) end return end
     if cmd:KeyDown( IN_JUMP ) then
         cmd:RemoveKey( IN_JUMP )
     end
@@ -319,16 +321,16 @@ local function CreateSection(r, x, y, w, h, text)
 	draw.SimpleText(text, "MainFont3", x+35, y-7, Color(50, 50, 250, 255),TEXT_ALIGN_CENTER, TEXT_ALIGN_LEFT)
 end
 
-local function CheckBox(text, parent, x, y, group, var, type)
+local function CheckBox(text, parent, x, y, entry, type)
 	local ibCheckbox = vgui.Create( "DCheckBoxLabel", parent)
 	ibCheckbox:SetPos( x, y )
 	ibCheckbox:SetFont("MainFont3")
 	ibCheckbox:SetText(text)
 	ibCheckbox:SetTextColor(color_white)
-	ibCheckbox:SetValue( CurrentConfig[group][var] )
+	ibCheckbox:SetValue( readData(CurrentConfig,entry) )
 	ibCheckbox:SizeToContents()
 	function ibCheckbox.Button:Paint(w, h)
-		if DefaultConfig[group][var] then
+		if readData(CurrentConfig,entry) then
 			draw.RoundedBox(0, 2, 2, w-4, h-4, Color(58, 144, 226))
 		else
 			draw.RoundedBox(0, 1, 1, w-2, h-2, Color(30, 30, 45))
@@ -338,7 +340,8 @@ local function CheckBox(text, parent, x, y, group, var, type)
 		end
 	end	
 	function ibCheckbox:OnChange(val)
-		DefaultConfig[group][var] = val
+		entry[#entry+1] = val
+		changeData(CurrentConfig,entry)
 	end
 	
 	if type == "col" then
@@ -540,7 +543,7 @@ local function CreateMenu()
 		end
 	end
 
-	CheckBox("Test CheckBox", panel1, 20, 70, "movement", "bhop", "col")
+	CheckBox("Test CheckBox", panel1, 20, 70, {"gfuel","movement","bhop","status"}, "col")
 
     return IdiotFrame
 end
@@ -561,7 +564,6 @@ local function toggleMenu()
 end
 
 local function keyPressed(a,b)
-	print(readData(CurrentConfig,{"gfuel","movement","bhop"}))
 	if  input.IsKeyDown(KEY_HOME) and not menudebounce then
 		toggleMenu()
 		menudebounce = true
