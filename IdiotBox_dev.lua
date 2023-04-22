@@ -181,7 +181,7 @@ end
 
 local function changeData(tabl,pathArray) --- stolen from devforum | Source: https://devforum.roblox.com/t/how-to-make-equivalent-of-instancegetfullname-for-tables/1114061
 	--send pathArray to client
-	local template = table.Copy(DefaultConfig)
+	local template = DefaultConfig
 	for index, path in ipairs(pathArray) do
 		if pathArray[index + 2]==nil then
 			if typeof(pathArray[index + 1]) == typeof(template[path]) and pathArray[index + 1]~=nil and template[path]~=nil then tabl[path] = pathArray[index + 1] end
@@ -197,25 +197,20 @@ local function changeData(tabl,pathArray) --- stolen from devforum | Source: htt
 	end
 end
 
-local function readData(tabel,pathArray) --- as you can guess this is to read values
+local function readData(tabl,pathArray) --- after many hours i came up with this. Sleep deprivation called for distance.
 	--send pathArray to client
-	local template = table.Copy(DefaultConfig)
-	local tabl = table.Copy(tabel)
+	local template = DefaultConfig
 	for index, path in ipairs(pathArray) do
-		if typeof(template)~="table" then return tabl end
-		
 		if pathArray[index + 1]==nil then
-			--if template[path]~=nil then 
-			return tabl
-			--end
+			if typeof(tabl[path]) == typeof(template[path]) then print(tabl) return tabl[path] end
 		else
 			if tabl[path]==nil then
 				break
 			end
-			if typeof(tabl[path]) == typeof(template[path]) and tabl[path]~=nil and template[path]~=nil then
-				tabl = tabl[path]
+			if typeof(tabl[path]) == typeof(template[path]) then
+				tabl = tabl[path] 
 				template = template[path] 
-			else break end
+				else break end
 		end
 	end
 end
@@ -327,6 +322,7 @@ local function CheckBox(text, parent, x, y, entry, type)
 	ibCheckbox:SetFont("MainFont3")
 	ibCheckbox:SetText(text)
 	ibCheckbox:SetTextColor(color_white)
+	--print(readData(CurrentConfig,entry))
 	ibCheckbox:SetValue( readData(CurrentConfig,entry) )
 	ibCheckbox:SizeToContents()
 	function ibCheckbox.Button:Paint(w, h)
@@ -340,6 +336,7 @@ local function CheckBox(text, parent, x, y, entry, type)
 		end
 	end	
 	function ibCheckbox:OnChange(val)
+		local entry = table.Copy(entry)
 		entry[#entry+1] = val
 		changeData(CurrentConfig,entry)
 	end
