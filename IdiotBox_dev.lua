@@ -202,7 +202,7 @@ local function readData(tabl,pathArray) --- after many hours i came up with this
 	local template = DefaultConfig
 	for index, path in ipairs(pathArray) do
 		if pathArray[index + 1]==nil then
-			if typeof(tabl[path]) == typeof(template[path]) then print(tabl) return tabl[path] end
+			if typeof(tabl[path]) == typeof(template[path]) then return tabl[path] end
 		else
 			if tabl[path]==nil then
 				break
