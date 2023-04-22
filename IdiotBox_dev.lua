@@ -13,7 +13,7 @@ New features include:
 ]]
 --- Initial Values ---
 local ProtectedFilenames = {["IdiotBox_latest.lua"]=true,["IdiotBox_backup.lua"]=true,["IdiotBox_dev.lua"]=true}
-local build = 700
+local float build = 700
 local folder = "IdiotBox"
 local self = LocalPlayer()
 --- Memory setup ---
@@ -304,16 +304,16 @@ local function DrawUpperText(w, h)
 	surface.SetTextPos(50, 15 - th / 2)
 	surface.SetTextColor(HSVToColor(RealTime() * 45 % 360, 1, 1))
 	surface.SetFont("MainFont")
-	surface.DrawText("IdiotBox v6.9.b7")
+	surface.DrawText("IdiotBox "..(build))
 	surface.SetTextPos(160, 18 - th / 2)
 	surface.SetTextColor(0, 155, 230, 175)
 	surface.SetFont("MainFont2")
-	surface.DrawText("Latest build: April 15th 2023")
+	surface.DrawText("Latest build: idk let me implement latest commit")
 end
 
 local function CreateSection(r, x, y, w, h, text)
 	draw.RoundedBox(r, x, y, w, h, Color(40, 40, 60, 255))
-	draw.SimpleText(text, "MainFont3", x+35, y-7, Color(50, 50, 250, 255),TEXT_ALIGN_CENTER, TEXT_ALIGN_LEFT)
+	draw.SimpleText(text, "MainFont3", x+ScreenY()*.04, y-ScreenY()*.008, Color(50, 50, 250, 255),TEXT_ALIGN_CENTER, TEXT_ALIGN_LEFT)
 end
 
 local function CheckBox(text, parent, x, y, entry, type)
@@ -351,15 +351,16 @@ end
 local function CreateMenu()
 	-- Frame
 	local IdiotFrame = vgui.Create("DFrame")
-	IdiotFrame:SetSize(771, 859)
+	IdiotFrame:SetSize(ScreenY()*.75, ScreenY()*.9)
+	local radius = ScreenY()*.025
 	IdiotFrame:Center()
 	IdiotFrame:SetTitle("")
 	IdiotFrame:ShowCloseButton(false)
 	IdiotFrame:SetDraggable(false)
 	IdiotFrame:MakePopup()
 	IdiotFrame.Paint = function(self, w, h)
-		draw.RoundedBox(60, 0, 0, w, h, Color(50, 50, 250, 255))
-		draw.RoundedBox(60, 2, 2, w - 4, h - 4, Color(30, 30, 45))
+		draw.RoundedBox(radius, 0, 0, w, h, Color(50, 50, 250, 255))
+		draw.RoundedBox(radius, 2, 2, w - 4, h - 4, Color(30, 30, 45))
 		DrawUpperText(w, h)
 	end
 	
@@ -368,7 +369,7 @@ local function CreateMenu()
 	local panel1 = vgui.Create("DPanel", IdiotFrame)
 	panel1:Dock(FILL)
 	panel1.Paint = function()
-		CreateSection(0, 15, 60, 235, 250, "Test")
+		CreateSection(0, 15, 60, ScreenY()*.25, ScreenY()*.2, "Test")
 		--CreateSection(0, 265, 60, 235, 250, "text")
 		--CreateSection(0, 515, 60, 235, 250, "text")
 	end
